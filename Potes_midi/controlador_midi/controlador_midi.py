@@ -1,3 +1,0 @@
-import mido
-
-class ContMidi

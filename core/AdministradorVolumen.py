@@ -35,9 +35,3 @@ class AdministradorVolumen:
                 if programa not in self.lista_programas_asignados and not pot.tienePrograma():
                     self.lista_programas_asignados.append(programa)
                     pot.asignarPrograma(programa)
-
-
-
-
-
-

@@ -69,7 +69,7 @@ def potenciometros():
 #parte de potenciometros
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": # Esto lo que hace es que si se ejecuto desde un .py, se ejecuta lo de dentro del if
 
     app = QApplication(sys.argv)
     window = VentanaPrincipal()
