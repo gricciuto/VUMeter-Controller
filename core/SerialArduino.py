@@ -20,6 +20,45 @@ class SerialArduino(threading.Thread):
         super().__init__(daemon=True)
         self.baudios = baudios
         self.cola = cola
+    def enviarPaquete(self,paquete):
+        try:
+            self.conexion.flush()
+            self.conexion.write(paquete.encode())
+        except serial.SerialException as e:
+            self.cola.append(["ERROR","No hay arduino conectado para enviar el paquete"])
+        except Exception as e:
+            self.cola.append(["ERROR",str(e)])
+
+    def run(self):
+        self.cola.append(["INFO",f"Intentando conexion en {self.puerto}"])
+
+        try:
+            self.conexion = serial.Serial(port=self.puerto, baudrate=self.baudios, timeout=0.1)
+            self.conexion.timeout = 1
+            time.sleep(5)
+            self.cola.append(["INFO",f"Se accedio a un dispositivo en {self.puerto}, enviando paquete HandShake"])
+            self.conectado = self.enviarSaludo()
+            while True:
+
+                pass
+                #Aca es donde si hay paquetes para leer (de que se movio un potenciometro) se va a leer.
+
+            #si lo que se conecto es el arduino, este deberia contestar con un handshake tambien
+
+        except serial.SerialException as e:
+            if "Access is denied" in str(e):
+                self.cola.append(["ERROR","Acceso denegado al puerto seleccionado.\nProbablemente otro programa esta utilizandolo"])
+            else:
+                if "FileNotFoundError" in str(e):
+                    self.cola.append(["ERROR","No se encotro ningun dispositivo de comunicacion serial o el seleccionado no es valido"])
+                else:
+                    self.cola.append(["ERROR","Error desconocido"])
+
+
+
+
+
+
 
     def cambiarLuz(self):
         if not self.luz:
@@ -50,29 +89,7 @@ class SerialArduino(threading.Thread):
     def setDatos(self, data_puerto):
         self.puerto = data_puerto
 
-    def run(self):
-        self.mostrarMensaje(f"Intentando conexion en {self.puerto}")
-        try:
-            self.conexion = serial.Serial(port=self.puerto, baudrate=self.baudios, timeout=0.1)
-            self.conexion.timeout = 1
-            time.sleep(5)
-            self.mostrarMensaje(f"Se accedio a un dispositivo en {self.puerto}, enviando paquete HandShake")
-            self.conectado = self.enviarSaludo()
-            while True:
 
-                pass
-                #Aca es donde si hay paquetes para leer (de que se movio un potenciometro) se va a leer.
-
-            #si lo que se conecto es el arduino, este deberia contestar con un handshake tambien
-
-        except serial.SerialException as e:
-            if "Access is denied" in str(e):
-                self.mostrarMensaje("Acceso denegado al puerto seleccionado.\n Probablemente otro programa esta utilizandolo")
-            else:
-                if "FileNotFoundError" in str(e):
-                    self.mostrarMensaje("No se encontro ningun dispositivo de comunicacion serial o el seleccionado no es valido")
-                else:
-                    self.mostrarMensaje("Error desconocido")
 
     def enviarSaludo(self):
         paquete = "5.hs\n".encode()
