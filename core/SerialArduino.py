@@ -8,17 +8,18 @@ import serial.tools.list_ports
 def get_puertos():
     return serial.tools.list_ports.comports()
 
-
-class ControladorSerial(threading.Thread):
+#Modulo encargado de manejar la comunicacion con el arduino, se supone que solo debe recibir, decodificar la informacion y mandarla por el bus, ademas de recibir datos del modulo de logica y pasarlos al arduino tambien
+class SerialArduino(threading.Thread):
     conexion = None
     baudios = None
     conectado = False
     puerto = None
     luz = False
-    interfaz = None
-    def __init__(self, baudios):
+
+    def __init__(self,cola, baudios = 9600):
         super().__init__(daemon=True)
         self.baudios = baudios
+        self.cola = cola
 
     def cambiarLuz(self):
         if not self.luz:
@@ -46,10 +47,10 @@ class ControladorSerial(threading.Thread):
             except Exception as error:
                 print(error)
         print(self.luz)
-    def setDatos(self, data_puerto, ventana):
+    def setDatos(self, data_puerto):
         self.puerto = data_puerto
-        self.interfaz = ventana
-    def run(self,):
+
+    def run(self):
         self.mostrarMensaje(f"Intentando conexion en {self.puerto}")
         try:
             self.conexion = serial.Serial(port=self.puerto, baudrate=self.baudios, timeout=0.1)
@@ -57,6 +58,10 @@ class ControladorSerial(threading.Thread):
             time.sleep(5)
             self.mostrarMensaje(f"Se accedio a un dispositivo en {self.puerto}, enviando paquete HandShake")
             self.conectado = self.enviarSaludo()
+            while True:
+
+                pass
+                #Aca es donde si hay paquetes para leer (de que se movio un potenciometro) se va a leer.
 
             #si lo que se conecto es el arduino, este deberia contestar con un handshake tambien
 
@@ -79,20 +84,16 @@ class ControladorSerial(threading.Thread):
             datos = self.conexion.read(3) #Aca no va a tener que esperar nada porque ya tiene 3 bytes para leer, lo unico que le queda es saber si son el paquete o no.
             header, comando, checksum = datos
             if header == 0xAA and checksum == (header ^ comando):
-                self.mostrarMensaje("Se obtuvo respuesta, conexion exitosa.")
                 #Una vez que se logro la conexion hay que habilitar los botones de luz  e iniciar y desactivar el de conectar.
-                self.interfaz.ui.pushButton_4.setEnabled(False)
-                self.interfaz.ui.pushButton_2.setEnabled(True)
-                self.interfaz.ui.pushButton_3.setEnabled(True)
+                self.cola.append(["ARDUINO_CONECTADO","Se obtuvo respuesta, conexion exitosa"])
                 return True
             else:
                 return False
         else:
-            self.mostrarMensaje("No hubo respuesta del arduino, asegurese de cargar el programa en el mismo.")
+            self.cola.append(["ERROR","Error, no hubo respuesta del arduino, recorda que tiene que tener el programa cargado"])
             return False
 
-    def mostrarMensaje(self, mensaje):
-        self.interfaz.ui.textEdit.append(mensaje)
+
     def getConectado(self):
         return self.conectado
 

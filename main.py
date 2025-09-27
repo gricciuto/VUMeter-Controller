@@ -10,8 +10,8 @@ import time
 from numpy.f2py.auxfuncs import throw_error
 
 
-from core.audio import ControladorAudio
-from core.serial_arduino import ControladorSerial, get_puertos
+from core.ControladorAudio import ControladorAudio
+from core.SerialArduino import SerialArduino, get_puertos
 from PyQt6.QtWidgets import QApplication
 from core.Ventana import VentanaPrincipal
 #Se necesita Python 3.10
@@ -20,7 +20,7 @@ BAUD_RATE = 9600
 
 lock = threading.Lock()
 c_audio = ControladorAudio()
-c_arduino = ControladorSerial(BAUD_RATE) #Este seria el objeto que guarda la conexion que al final puede haber quedado como conectada
+c_arduino = SerialArduino(BAUD_RATE) #Este seria el objeto que guarda la conexion que al final puede haber quedado como conectada
 def hiloLogico():
     pass
 
@@ -29,7 +29,7 @@ def salir():
 
 def conectar_arduino():
     global c_arduino
-    c_arduino = ControladorSerial(BAUD_RATE) #Esto es porque al ser un hilo, si quiero reintentar la conexion tengo que crear un objeto nuevo.
+    c_arduino = SerialArduino(BAUD_RATE) #Esto es porque al ser un hilo, si quiero reintentar la conexion tengo que crear un objeto nuevo.
     puerto = window.ui.comboBox_2.currentText()
 
     c_arduino.setDatos(puerto,window) #Le paso la ventana para que pueda imprimir mensajes de estado en el panel de texto, y tambien para que si se logra la conexion habilite los botones
@@ -65,7 +65,7 @@ def potenciometros():
     adm = AdministradorVolumen(window)
     listener = ListenerProgramas(adm.actualizarListaProgramas)
     adm.actualizarListaProgramas()
-    listener.listener()
+    listener.listen()
 #parte de potenciometros
 
 
