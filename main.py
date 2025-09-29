@@ -32,7 +32,8 @@ def conectar_arduino():
     c_arduino = SerialArduino(BAUD_RATE) #Esto es porque al ser un hilo, si quiero reintentar la conexion tengo que crear un objeto nuevo.
     puerto = window.ui.comboBox_2.currentText()
 
-    c_arduino.setDatos(puerto,window) #Le paso la ventana para que pueda imprimir mensajes de estado en el panel de texto, y tambien para que si se logra la conexion habilite los botones
+    c_arduino.setPuerto(
+        puerto)  #Le paso la ventana para que pueda imprimir mensajes de estado en el panel de texto, y tambien para que si se logra la conexion habilite los botones
     c_arduino.start()
 def iniciar_captura_audio():
     global c_audio
