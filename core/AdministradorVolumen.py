@@ -33,13 +33,19 @@ class AdministradorVolumen:
 
 
     def actualizarVolumen(self,programa,nivel):
-        for proceso in self.lista_programas:
-            if proceso.Process.name == programa:
-                proceso.SimpleAudioVolume.SetMasterVolume(nivel, None)
+        sesiones = AudioUtilities.GetAllSessions()
+        print(f"Se llamo a actualizarVOlumen de {programa}")
+        for sesion in sesiones:
+            if sesion.Process is not None:
+                print(sesion.Process.name())
+            if sesion.Process is not None and sesion.Process.name() == programa:
+                sesion.SimpleAudioVolume.SetMasterVolume(nivel/100, None)
+                print(f"se cambio el volumen de un programa llamado {sesion.Process.name}")
 
     def actualizarVolumenMaster(self,nivel):
         devices = AudioUtilities.GetSpeakers()
         interfaz = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
         volumen = interfaz.QueryInterface(IAudioEndpointVolume)
+        print(nivel)
         volumen.SetMasterVolumeLevelScalar(nivel/100, None)
 

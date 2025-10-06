@@ -66,7 +66,9 @@ class Logica(QThread,QObject):
                     #Se emite la senial para que la interfaz actualice el potenciometro
                     self.senial.emit(["SLIDER_MASTER",entrada[1]])
                     self.administradorVolumen.actualizarVolumenMaster(entrada[1])
+                    print(entrada[1])
                 case "POT2":
+
                     self.senial.emit(["SLIDER_POT1", entrada[1]])
                     self.administradorVolumen.actualizarVolumen(self.potenciometros.get("POT2"), entrada[1])
                 case "EVENTO":
