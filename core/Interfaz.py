@@ -49,7 +49,7 @@ class Interfaz(QMainWindow):
     def inicializar(self):
         #Aca se inicializan las seniales de los objetos que pueden llegar a generarlas
         self.ui.pushButton.clicked.connect(self.close)
-        self.ui.pushButton_4.clicked.connect(lambda: self.senial.emit(["BOTON","conectar_arduino"]))
+        self.ui.pushButton_4.clicked.connect(lambda: self.senial.emit(["BOTON","conectar_arduino",self.ui.comboBox_2.currentText()]))
         self.ui.pushButton_3.clicked.connect(lambda: self.senial.emit(["BOTON","encender_luz"]))
         self.ui.pushButton_2.clicked.connect(lambda: self.senial.emit(["BOTON","iniciar"]))
         self.ui.comboBox.currentIndexChanged.connect(lambda: self.senial.emit(["COMBOBOX_DISP", self.ui.comboBox.currentText()]))
@@ -77,6 +77,7 @@ class Interfaz(QMainWindow):
 
         if elemento is not None:
             if isinstance(elemento, list):
+
                 self.lista_programas = senial[1]
                 for combo in self.combos:
                     actual = combo.currentText()
@@ -91,11 +92,12 @@ class Interfaz(QMainWindow):
                     combo.blockSignals(False)
 
             if isinstance(elemento,QComboBox):
+                for puerto in senial[1]:
+                    nombre = puerto.name
+                    elemento.addItem(nombre)
+                    print(nombre)
 
-                elemento.clear()
-                senial.pop(0)
-                self.lista_programas.append(senial)
-                elemento.addItems(self.lista_programas)
+
                 elemento.setCurrentIndex(0)
             if isinstance(elemento, QTextEdit):
                 elemento.append(senial[1])

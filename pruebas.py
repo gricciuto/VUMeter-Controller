@@ -19,8 +19,7 @@ if __name__ == "__main__":
     interfaz.mostrar()
 
     serialArduino = SerialArduino(bus)
-    serialArduino.setPuerto("COM3")
-    serialArduino.start()
+
 
     administradorVolumen = AdministradorVolumen(bus)
 
@@ -30,6 +29,7 @@ if __name__ == "__main__":
     logica = Logica(bus, administradorVolumen)
     logica.start()
     logica.senial.connect(interfaz.actualizar)
+    logica.senial_serial.connect(serialArduino.setPuerto)
     interfaz.senial.connect(logica.actualizar)
     sys.exit(app.exec())
 

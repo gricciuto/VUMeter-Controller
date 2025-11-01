@@ -4,9 +4,13 @@ from queue import Queue
 
 from PySide6.QtCore import Signal, QThread, QObject
 
+from core.SerialArduino import get_puertos
+
 
 class Logica(QThread,QObject):
     senial = Signal(list)
+    senial_serial = Signal(list)
+    lista_programas = []
     lista_programas = []
     potenciometros = {
         "POT2": None,
@@ -20,6 +24,7 @@ class Logica(QThread,QObject):
         self.cola = cola
         self.administradorVolumen = administradorVolumen
         self.administradorVolumen.actualizarListaProgramas()
+        self.cola.put(["INTERFAZ","COMBOBOX_ARDUINO",get_puertos()])
 
     def actualizar(self,senial):
         match senial[0]:
@@ -38,7 +43,14 @@ class Logica(QThread,QObject):
             case "comboBoxPot5":
                 self.potenciometros["POT6"] = senial[1]
                 print(self.potenciometros)
-
+            case "BOTON":
+                match senial[1]:
+                    case "conectar_arduino":
+                        if senial[2] == "":
+                            print(f"Se quiso conectar al arduino en el puerto {senial[2]}")
+                            self.cola.put(["ERROR","No hay ningun puerto arduino seleccionado"])
+                        else:
+                            self.senial_serial.emit(senial[2])
 
     #Consumidor de items de la cola
     def run(self):
@@ -74,3 +86,10 @@ class Logica(QThread,QObject):
                 case "EVENTO":
                     self.administradorVolumen.actualizarListaProgramas()
                     print(self.lista_programas)
+                case "ERROR":
+                    print(f"ERROR: {entrada[1]}")
+                    self.senial.emit(["LOG",entrada[1]])
+                case "INFO":
+                    print(f"INFO: {entrada[1]}")
+                case "INTERFAZ":
+                    self.senial.emit([entrada[1],entrada[2]])
