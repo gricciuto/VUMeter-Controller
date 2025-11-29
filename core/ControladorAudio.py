@@ -1,5 +1,6 @@
 import threading
 from collections import deque
+from queue import Queue
 
 import soundcard
 import numpy as np
@@ -13,9 +14,10 @@ class ControladorAudio(threading.Thread):
     disp_captura = None
 
     detener = False
-    def __init__(self, cola : deque):
+    def __init__(self, cola : Queue):
         self.microfonos = soundcard.all_microphones(include_loopback=True)
         self.cola = cola
+        self.cola.put(["INTERFAZ","COMBOBOX_DISP",self.microfonos])
         super().__init__(daemon=True)
 
 
@@ -45,7 +47,7 @@ class ControladorAudio(threading.Thread):
                 nivel_der = np.clip((db_der + 40) / 40, 0, 1)
                 nivel_izq = np.clip((db_izq + 40) / 40, 0, 1)
 
-                self.cola.append(["NIVELES", nivel_der, nivel_izq] )
+                self.cola.put(["NIVELES", nivel_der, nivel_izq] )
                 ##self.interfaz.ui.progressBar.setValue(int(nivel_izq*100))
                 ##self.interfaz.ui.progressBar_2.setValue(int(nivel_der*100))
                 ##pwm_der = int(nivel_der * 255)

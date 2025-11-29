@@ -5,7 +5,7 @@ int pot3 = 0;
 int pot4 = 0;
 int pot5 = 0;
 int pot6 = 0;
-
+bool conectado;
 
 void setup() {
   Serial.begin(9600);
@@ -13,6 +13,7 @@ void setup() {
   pinMode(3, OUTPUT);//Pin VUmetro 1
   pinMode(5, OUTPUT);//Pin VUmetro 2
   pinMode(6, OUTPUT);//Pin Luces
+  conectado = false;
 }
 
 
@@ -36,6 +37,8 @@ void loop() {
       byte checksum = header ^ comando;
       byte paquete[3] = {header, comando, checksum};
       Serial.write(paquete, 3);
+      //Ya se le llego un paquete de hs y lo contesto vamos a poner que se logro la conexion
+      conectado = true;
     }
     if (tipo == 1){ //Paquete de sonido
       String input_der = Serial.readStringUntil(',');
@@ -53,62 +56,64 @@ void loop() {
       analogWrite(6, intensidad);
     }
   }
-  
-  if (analogRead(A0) < pot1-3 || analogRead(A0) > pot1+3){
-    pot1 = analogRead(A0);
-    int pot1_norm = linearizar(analogRead(A0));
-    byte header = 0xA1;
-    byte comando = pot1_norm;
-    byte checksum = header ^ comando;
-    byte paquete[3] = {header, comando, checksum};
-    Serial.write(paquete, 3);
+  if (conectado){
+       if (analogRead(A0) < pot1-3 || analogRead(A0) > pot1+3){
+        pot1 = analogRead(A0);
+        int pot1_norm = linearizar(analogRead(A0));
+        byte header = 0xA1;
+        byte comando = pot1_norm;
+        byte checksum = header ^ comando;
+        byte paquete[3] = {header, comando, checksum};
+        Serial.write(paquete, 3);
 
+      }
+      if (analogRead(A1) < pot2-3 || analogRead(A1) > pot2+3){
+        pot2 = analogRead(A1);
+        int pot2_norm = linearizar(analogRead(A1));
+        byte header = 0xA2;
+        byte comando = pot2_norm;
+        byte checksum = header ^ comando;
+        byte paquete[3] = {header, comando, checksum};
+        Serial.write(paquete, 3);
+      }
+      if (analogRead(A2) < pot3-3 || analogRead(A2) > pot3+3){
+        pot3 = analogRead(A2);
+        int pot3_norm = linearizar(analogRead(A2));
+        byte header = 0xA3;
+        byte comando = pot3_norm;
+        byte checksum = header ^ comando;
+        byte paquete[3] = {header, comando, checksum};
+        Serial.write(paquete, 3);
+      }
+      if (analogRead(A3) < pot4-3 || analogRead(A3) > pot4+3){
+        pot4 = analogRead(A3);
+        int pot4_norm = linearizar(analogRead(A3));
+        byte header = 0xA4;
+        byte comando = pot4_norm;
+        byte checksum = header ^ comando;
+        byte paquete[3] = {header, comando, checksum};
+        Serial.write(paquete, 3);
+      }
+      if (analogRead(A4) < pot5-3 || analogRead(A4) > pot5+3){
+        pot5 = analogRead(A4);
+        int pot5_norm = linearizar(analogRead(A4));
+        byte header = 0xA5;
+        byte comando = pot5_norm;
+        byte checksum = header ^ comando;
+        byte paquete[3] = {header, comando, checksum};
+        Serial.write(paquete, 3);
+      }
+      if (analogRead(A5) < pot6-3 || analogRead(A5) > pot6+3){
+        pot6 = analogRead(A5);
+        int pot6_norm = linearizar(analogRead(A5));
+        byte header = 0xA6;
+        byte comando = pot6_norm;
+        byte checksum = header ^ comando;
+        byte paquete[3] = {header, comando, checksum};
+        Serial.write(paquete, 3);
+      }
   }
-  if (analogRead(A1) < pot2-3 || analogRead(A1) > pot2+3){
-    pot2 = analogRead(A1);
-    int pot2_norm = linearizar(analogRead(A1));
-    byte header = 0xA2;
-    byte comando = pot2_norm;
-    byte checksum = header ^ comando;
-    byte paquete[3] = {header, comando, checksum};
-    Serial.write(paquete, 3);
-  }
-  if (analogRead(A2) < pot3-3 || analogRead(A2) > pot3+3){
-    pot3 = analogRead(A2);
-    int pot3_norm = linearizar(analogRead(A2));
-    byte header = 0xA3;
-    byte comando = pot3_norm;
-    byte checksum = header ^ comando;
-    byte paquete[3] = {header, comando, checksum};
-    Serial.write(paquete, 3);
-  }
-  if (analogRead(A3) < pot4-3 || analogRead(A3) > pot4+3){
-    pot4 = analogRead(A3);
-    int pot4_norm = linearizar(analogRead(A3));
-    byte header = 0xA4;
-    byte comando = pot4_norm;
-    byte checksum = header ^ comando;
-    byte paquete[3] = {header, comando, checksum};
-    Serial.write(paquete, 3);
-  }
-  if (analogRead(A4) < pot5-3 || analogRead(A4) > pot5+3){
-    pot5 = analogRead(A4);
-    int pot5_norm = linearizar(analogRead(A4));
-    byte header = 0xA5;
-    byte comando = pot5_norm;
-    byte checksum = header ^ comando;
-    byte paquete[3] = {header, comando, checksum};
-    Serial.write(paquete, 3);
-  }
-  if (analogRead(A5) < pot6-3 || analogRead(A5) > pot6+3){
-    pot6 = analogRead(A5);
-    int pot6_norm = linearizar(analogRead(A5));
-    byte header = 0xA6;
-    byte comando = pot6_norm;
-    byte checksum = header ^ comando;
-    byte paquete[3] = {header, comando, checksum};
-    Serial.write(paquete, 3);
-  }
+
   //Serial.print("pot1: ");
   //Serial.println(analogRead(A0));
   //delay(10);

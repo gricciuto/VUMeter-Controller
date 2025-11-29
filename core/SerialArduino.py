@@ -13,12 +13,12 @@ def get_puertos():
 class SerialArduino(threading.Thread):
     conexion = None
     baudios = None
-    conectado = False
     puerto = None
     luz = False
 
     def __init__(self,cola: Queue, baudios = 9600):
         super().__init__(daemon=True)
+        self.conectado = False
         self.baudios = baudios
         self.cola = cola
     def enviarPaquete(self,paquete):
@@ -35,11 +35,10 @@ class SerialArduino(threading.Thread):
         print("corriendo")
         try:
             self.conexion = serial.Serial(port=self.puerto, baudrate=self.baudios, timeout=None)
-            time.sleep(2)
+            time.sleep(3)
             self.cola.put(["INFO",f"Se accedio a un dispositivo en {self.puerto}, enviando paquete HandShake"])
             self.conectado = self.enviarSaludo()
-            while True:
-
+            while self.conectado:
                 datos = self.conexion.read(3)
                 header, comando, checksum = datos
                 if header == 0xA1 and checksum == header ^ comando:
@@ -55,7 +54,7 @@ class SerialArduino(threading.Thread):
                 if header == 0xA6 and checksum == header ^ comando:
                     self.cola.put(["POT6",comando])
                 #Aca es donde si hay paquetes para leer (de que se movio un potenciometro) se va a leer.
-
+            self.conexion.close()
             #si lo que se conecto es el arduino, este deberia contestar con un handshake tambien
 
         except serial.SerialException as e:
@@ -99,8 +98,8 @@ class SerialArduino(threading.Thread):
             except Exception as error:
                 print(error)
         print(self.luz)
-    def setPuerto(self, data_puerto):
-        self.puerto = data_puerto
+    def setPuerto(self,data_puerto):
+        self.puerto = str(data_puerto)
 
 
 
@@ -113,9 +112,11 @@ class SerialArduino(threading.Thread):
         if self.conexion.in_waiting == 3: #Esto es para que, cuando se espero el tiempo necesario, si hay 3 bytes para leer, que se lean. Esto genera que no se bloquee esperando que lleguen mas bytes.
             datos = self.conexion.read(3) #Aca no va a tener que esperar nada porque ya tiene 3 bytes para leer, lo unico que le queda es saber si son el paquete o no.
             header, comando, checksum = datos
+            print(datos)
             if header == 0xAA and checksum == (header ^ comando):
                 #Una vez que se logro la conexion hay que habilitar los botones de luz  e iniciar y desactivar el de conectar.
-                self.cola.put(["ARDUINO_CONECTADO","Se obtuvo respuesta, conexion exitosa"])
+                self.cola.put(["INFO","Se obtuvo respuesta, conexion exitosa"])
+                self.cola.put(["ARDUINO_CONECTADO"])
                 return True
             else:
                 return False

@@ -14,13 +14,13 @@ class ListenerProgramas:
         while True:
             avisador()
             self.cola.put(["EVENTO","Se creo un programa"])
-            print("Se notifico apertura")
+            #print("Se notifico apertura")
     def _watch_deletion(self):
         w = wmi.WMI()
         avisador = w.Win32_Process.watch_for("deletion")
         while True:
             avisador()
-            print("Se notifico cierre")
+            #print("Se notifico cierre")
             self.cola.put(["EVENTO","Se borro un programa"])
 
     def listen(self):

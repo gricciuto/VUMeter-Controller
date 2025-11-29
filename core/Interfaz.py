@@ -48,13 +48,12 @@ class Interfaz(QMainWindow):
         }
     def inicializar(self):
         #Aca se inicializan las seniales de los objetos que pueden llegar a generarlas
-        self.ui.pushButton.clicked.connect(self.close)
+        self.ui.pushButton.clicked.connect(lambda: self.close())
         self.ui.pushButton_4.clicked.connect(lambda: self.senial.emit(["BOTON","conectar_arduino",self.ui.comboBox_2.currentText()]))
         self.ui.pushButton_3.clicked.connect(lambda: self.senial.emit(["BOTON","encender_luz"]))
         self.ui.pushButton_2.clicked.connect(lambda: self.senial.emit(["BOTON","iniciar"]))
         self.ui.comboBox.currentIndexChanged.connect(lambda: self.senial.emit(["COMBOBOX_DISP", self.ui.comboBox.currentText()]))
         self.ui.comboBox_2.currentIndexChanged.connect(lambda: self.senial.emit(["COMBOBOX_ARDUINO",self.ui.comboBox_2.currentText()]))
-
     def _combo_changed(self, combo):
         #Hubo un cambio en un combobox
         seleccionado = combo.currentText()
@@ -73,8 +72,11 @@ class Interfaz(QMainWindow):
 
     def actualizar(self,senial):
         elemento = self._mapa_elementos.get(senial[0])
-
-
+        if senial[0] == "GET_MICROFONOS":
+            self.
+        if senial[0] == "ARDUINO_CONECTADO":
+            self.ui.pushButton_2.setEnabled(True)
+            self.ui.pushButton_3.setEnabled(True)
         if elemento is not None:
             if isinstance(elemento, list):
 

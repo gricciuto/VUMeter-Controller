@@ -4,13 +4,12 @@ from queue import Queue
 
 from PySide6.QtCore import Signal, QThread, QObject
 
-from core.SerialArduino import get_puertos
+from core.ControladorAudio import ControladorAudio
+from core.SerialArduino import get_puertos, SerialArduino
 
 
 class Logica(QThread,QObject):
     senial = Signal(list)
-    senial_serial = Signal(list)
-    lista_programas = []
     lista_programas = []
     potenciometros = {
         "POT2": None,
@@ -19,9 +18,12 @@ class Logica(QThread,QObject):
         "POT5": None,
         "POT6": None
     }
-    def __init__(self,cola: Queue,administradorVolumen):
+    def __init__(self,cola: Queue,administradorVolumen, controladorAudio: ControladorAudio, serialArduino : SerialArduino):
         super().__init__()
         self.cola = cola
+        self.serialArudino = serialArduino
+        self.controladorAudio = controladorAudio
+        self.hiloArduino = threading.Thread(target=self.serialArudino.run,daemon=True)
         self.administradorVolumen = administradorVolumen
         self.administradorVolumen.actualizarListaProgramas()
         self.cola.put(["INTERFAZ","COMBOBOX_ARDUINO",get_puertos()])
@@ -30,27 +32,35 @@ class Logica(QThread,QObject):
         match senial[0]:
             case "comboBoxPot1":
                 self.potenciometros["POT2"] = senial[1]
-                print(self.potenciometros)
+                #print(self.potenciometros)
             case "comboBoxPot2":
                 self.potenciometros["POT3"] = senial[1]
-                print(self.potenciometros)
+                #print(self.potenciometros)
             case "comboBoxPot3":
                 self.potenciometros["POT4"] = senial[1]
-                print(self.potenciometros)
+                #print(self.potenciometros)
             case "comboBoxPot4":
                 self.potenciometros["POT5"] = senial[1]
-                print(self.potenciometros)
+                #print(self.potenciometros)
             case "comboBoxPot5":
                 self.potenciometros["POT6"] = senial[1]
-                print(self.potenciometros)
+                #print(self.potenciometros)
             case "BOTON":
                 match senial[1]:
+                    case "iniciar":
+                        #Cuando se clickea iniciar, se le pide a la interfaz que setee el microfono.
+                        pass
                     case "conectar_arduino":
                         if senial[2] == "":
-                            print(f"Se quiso conectar al arduino en el puerto {senial[2]}")
+
                             self.cola.put(["ERROR","No hay ningun puerto arduino seleccionado"])
                         else:
-                            self.senial_serial.emit(senial[2])
+                            self.serialArudino.conectado = False
+                            if not self.hiloArduino.is_alive():
+                                self.serialArudino.setPuerto(senial[2])
+                                self.hiloArduino = threading.Thread(target=self.serialArudino.run,daemon=True)
+                                self.hiloArduino.start()
+                            #print(f"Se quiso conectar al arduino en el puerto {senial[2]}\n")
 
     #Consumidor de items de la cola
     def run(self):
@@ -58,6 +68,9 @@ class Logica(QThread,QObject):
         while True:
             entrada = self.cola.get(block=True)
             match entrada[0]:
+                case "ARDUINO_CONECTADO":
+                    self.senial.emit(["ARDUINO_CONECTADO"])
+                    print("Se emitio arduino_conectado")
                 case "BORRAR_PROGRAMA":
                     self.lista_programas.remove(entrada[1])
                     self.senial.emit(["LISTA_PROGRAMAS",self.lista_programas])
@@ -78,14 +91,12 @@ class Logica(QThread,QObject):
                     #Se emite la senial para que la interfaz actualice el potenciometro
                     self.senial.emit(["SLIDER_MASTER",entrada[1]])
                     self.administradorVolumen.actualizarVolumenMaster(entrada[1])
-                    print(entrada[1])
                 case "POT2":
-
                     self.senial.emit(["SLIDER_POT1", entrada[1]])
                     self.administradorVolumen.actualizarVolumen(self.potenciometros.get("POT2"), entrada[1])
                 case "EVENTO":
                     self.administradorVolumen.actualizarListaProgramas()
-                    print(self.lista_programas)
+                    #print(self.lista_programas)
                 case "ERROR":
                     print(f"ERROR: {entrada[1]}")
                     self.senial.emit(["LOG",entrada[1]])
@@ -93,3 +104,4 @@ class Logica(QThread,QObject):
                     print(f"INFO: {entrada[1]}")
                 case "INTERFAZ":
                     self.senial.emit([entrada[1],entrada[2]])
+

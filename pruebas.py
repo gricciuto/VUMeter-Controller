@@ -5,6 +5,7 @@ from collections import deque
 from PySide6.QtWidgets import QApplication
 
 from core.AdministradorVolumen import AdministradorVolumen
+from core.ControladorAudio import ControladorAudio
 from core.Interfaz import Interfaz
 from core.ListenerProgramas import ListenerProgramas
 from core.Logica import Logica
@@ -20,16 +21,16 @@ if __name__ == "__main__":
 
     serialArduino = SerialArduino(bus)
 
+    controladorAudio = ControladorAudio(bus)
 
     administradorVolumen = AdministradorVolumen(bus)
 
     listener = ListenerProgramas(bus)
     listener.listen()
 
-    logica = Logica(bus, administradorVolumen)
+    logica = Logica(bus, administradorVolumen, controladorAudio, serialArduino)
     logica.start()
     logica.senial.connect(interfaz.actualizar)
-    logica.senial_serial.connect(serialArduino.setPuerto)
     interfaz.senial.connect(logica.actualizar)
     sys.exit(app.exec())
 
