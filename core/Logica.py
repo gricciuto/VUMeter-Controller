@@ -20,10 +20,15 @@ class Logica(QThread,QObject):
     }
     def __init__(self,cola: Queue,administradorVolumen, controladorAudio: ControladorAudio, serialArduino : SerialArduino):
         super().__init__()
+
         self.cola = cola
         self.serialArudino = serialArduino
         self.controladorAudio = controladorAudio
+
+        ## Hilos que se van a usar durante la ejecucion
+        self.hiloCaptura = threading.Thread(target=self.controladorAudio.run, daemon=True)
         self.hiloArduino = threading.Thread(target=self.serialArudino.run,daemon=True)
+
         self.administradorVolumen = administradorVolumen
         self.administradorVolumen.actualizarListaProgramas()
         self.cola.put(["INTERFAZ","COMBOBOX_ARDUINO",get_puertos()])
@@ -49,7 +54,7 @@ class Logica(QThread,QObject):
                 match senial[1]:
                     case "iniciar":
                         #Cuando se clickea iniciar, se le pide a la interfaz que setee el microfono.
-                        pass
+                        self.senial.emit(["GET_MICROFONOS"])
                     case "conectar_arduino":
                         if senial[2] == "":
 
@@ -68,6 +73,11 @@ class Logica(QThread,QObject):
         while True:
             entrada = self.cola.get(block=True)
             match entrada[0]:
+                case "SET_MICROFONO":
+                    self.controladorAudio.setDispCaptura(entrada[1])
+                    self.hiloCaptura = threading.Thread(target=self.controladorAudio.run, daemon=True)
+                    self.hiloCaptura.start()
+
                 case "ARDUINO_CONECTADO":
                     self.senial.emit(["ARDUINO_CONECTADO"])
                     print("Se emitio arduino_conectado")
@@ -90,10 +100,10 @@ class Logica(QThread,QObject):
                 case "POT1":
                     #Se emite la senial para que la interfaz actualice el potenciometro
                     self.senial.emit(["SLIDER_MASTER",entrada[1]])
-                    self.administradorVolumen.actualizarVolumenMaster(entrada[1])
+                    #self.administradorVolumen.actualizarVolumenMaster(entrada[1])
                 case "POT2":
                     self.senial.emit(["SLIDER_POT1", entrada[1]])
-                    self.administradorVolumen.actualizarVolumen(self.potenciometros.get("POT2"), entrada[1])
+                    #self.administradorVolumen.actualizarVolumen(self.potenciometros.get("POT2"), entrada[1])
                 case "EVENTO":
                     self.administradorVolumen.actualizarListaProgramas()
                     #print(self.lista_programas)
@@ -104,4 +114,6 @@ class Logica(QThread,QObject):
                     print(f"INFO: {entrada[1]}")
                 case "INTERFAZ":
                     self.senial.emit([entrada[1],entrada[2]])
+                case "NIVELES":
+                    self.serialArudino.enviar(entrada[1],entrada[2])
 

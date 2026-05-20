@@ -38,6 +38,8 @@ void loop() {
       byte paquete[3] = {header, comando, checksum};
       Serial.write(paquete, 3);
       //Ya se le llego un paquete de hs y lo contesto vamos a poner que se logro la conexion
+      //Hay que hacer esperar al arduino para que el programa lea el paquete de hs
+      delay(1000);
       conectado = true;
     }
     if (tipo == 1){ //Paquete de sonido
@@ -113,8 +115,13 @@ void loop() {
         Serial.write(paquete, 3);
       }
   }
+    else {
+        analogWrite(3,0);
+    analogWrite(5,0);
+}
+
 
   //Serial.print("pot1: ");
   //Serial.println(analogRead(A0));
   //delay(10);
-  }
+}

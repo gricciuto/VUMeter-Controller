@@ -15,7 +15,7 @@ if __name__ == "__main__":
     bus = queue.Queue()
 
     app = QApplication(sys.argv)
-    interfaz = Interfaz()
+    interfaz = Interfaz(bus)
     interfaz.inicializar()
     interfaz.mostrar()
 

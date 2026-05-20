@@ -47,7 +47,9 @@ class ControladorAudio(threading.Thread):
                 nivel_der = np.clip((db_der + 40) / 40, 0, 1)
                 nivel_izq = np.clip((db_izq + 40) / 40, 0, 1)
 
-                self.cola.put(["NIVELES", nivel_der, nivel_izq] )
+                self.cola.put(["NIVELES", nivel_der*255, nivel_izq*255] )
+                self.cola.put(["INTERFAZ", "NIVEL_D", nivel_der*100])
+                self.cola.put(["INTERFAZ", "NIVEL_I", nivel_izq*100])
                 ##self.interfaz.ui.progressBar.setValue(int(nivel_izq*100))
                 ##self.interfaz.ui.progressBar_2.setValue(int(nivel_der*100))
                 ##pwm_der = int(nivel_der * 255)
