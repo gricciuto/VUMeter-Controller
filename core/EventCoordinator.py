@@ -4,11 +4,15 @@ from queue import Queue
 
 from PySide6.QtCore import Signal, QThread, QObject
 
+from core.AdministradorVolumen import AdministradorVolumen
 from core.ControladorAudio import ControladorAudio
+from core.Interfaz import Interfaz
 from core.SerialArduino import get_puertos, SerialArduino
 
+#Tengo que decirle que hacer al modulo que quiero que haga algo, como lo hace no me importa, solo tengo que avisarle
+class EventCoordinator(QThread):
 
-class Logica(QThread,QObject):
+
     senial = Signal(list)
     lista_programas = []
     potenciometros = {
@@ -18,7 +22,7 @@ class Logica(QThread,QObject):
         "POT5": None,
         "POT6": None
     }
-    def __init__(self,cola: Queue,administradorVolumen, controladorAudio: ControladorAudio, serialArduino : SerialArduino):
+    def __init__(self,cola : Queue,administradorVolumen : AdministradorVolumen, controladorAudio: ControladorAudio, serialArduino : SerialArduino, ui:Interfaz):
         super().__init__()
 
         self.cola = cola
@@ -65,8 +69,6 @@ class Logica(QThread,QObject):
                                 self.serialArudino.setPuerto(senial[2])
                                 self.hiloArduino = threading.Thread(target=self.serialArudino.run,daemon=True)
                                 self.hiloArduino.start()
-                            #print(f"Se quiso conectar al arduino en el puerto {senial[2]}\n")
-
     #Consumidor de items de la cola
     def run(self):
 

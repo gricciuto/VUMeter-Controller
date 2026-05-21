@@ -56,7 +56,6 @@ class Interfaz(QMainWindow):
         self.ui.pushButton_2.clicked.connect(lambda: self.senial.emit(["BOTON","iniciar"]))
         self.ui.comboBox.currentIndexChanged.connect(lambda: self.senial.emit(["COMBOBOX_DISP", self.ui.comboBox.currentText()]))
         self.ui.comboBox_2.currentIndexChanged.connect(lambda: self.senial.emit(["COMBOBOX_ARDUINO",self.ui.comboBox_2.currentText()]))
-        self.ui.progressBar.setStyleSheet("QProgressBar::chunk {color: red;background-color: rgb(255, 255, 255);}")
     def _combo_changed(self, combo):
         #Hubo un cambio en un combobox
         seleccionado = combo.currentText()
@@ -77,7 +76,6 @@ class Interfaz(QMainWindow):
         elemento = self._mapa_elementos.get(senial[0])
         if senial[0] == "GET_MICROFONOS":
             self.bus.put(["SET_MICROFONO", self.ui.comboBox.currentText()])
-            print("Se actualiza el microfono: ", self.ui.comboBox.currentText())
         if senial[0] == "ARDUINO_CONECTADO":
             self.ui.pushButton_2.setEnabled(True)
             self.ui.pushButton_3.setEnabled(True)

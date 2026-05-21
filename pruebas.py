@@ -8,7 +8,7 @@ from core.AdministradorVolumen import AdministradorVolumen
 from core.ControladorAudio import ControladorAudio
 from core.Interfaz import Interfaz
 from core.ListenerProgramas import ListenerProgramas
-from core.Logica import Logica
+from core.EventCoordinator import EventCoordinator
 from core.SerialArduino import SerialArduino
 
 if __name__ == "__main__":
@@ -28,9 +28,9 @@ if __name__ == "__main__":
     listener = ListenerProgramas(bus)
     listener.listen()
 
-    logica = Logica(bus, administradorVolumen, controladorAudio, serialArduino)
-    logica.start()
-    logica.senial.connect(interfaz.actualizar)
-    interfaz.senial.connect(logica.actualizar)
+    coordinador = EventCoordinator(bus, administradorVolumen, controladorAudio, serialArduino, interfaz)
+    coordinador.start()
+    coordinador.senial.connect(interfaz.actualizar)
+    interfaz.senial.connect(coordinador.actualizar)
     sys.exit(app.exec())
 
