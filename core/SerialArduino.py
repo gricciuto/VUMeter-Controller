@@ -4,20 +4,25 @@ from queue import Queue
 
 import serial
 import serial.tools.list_ports
+from PySide6.QtCore import QObject, Signal
+
+from core.Evento import Evento, TipoEvento
 
 
 def get_puertos():
     return serial.tools.list_ports.comports()
 
 #Modulo encargado de manejar la comunicacion con el arduino, se supone que solo debe recibir, decodificar la informacion y mandarla por el bus, ademas de recibir datos del modulo de logica y pasarlos al arduino tambien
-class SerialArduino(threading.Thread):
+class SerialArduino(QObject):
     conexion = None
     baudios = None
     puerto = None
     luz = False
-
+    hilo = threading.Thread()
+    senial_conectado = Signal()
+    senial_error = Signal()
     def __init__(self,cola: Queue, baudios = 9600):
-        super().__init__(daemon=True)
+        super().__init__()
         self.conectado = False
         self.baudios = baudios
         self.cola = cola
@@ -116,17 +121,22 @@ class SerialArduino(threading.Thread):
             if header == 0xAA and checksum == (header ^ comando):
                 #Una vez que se logro la conexion hay que habilitar los botones de luz  e iniciar y desactivar el de conectar.
                 self.cola.put(["INFO","Se obtuvo respuesta, conexion exitosa"])
-                self.cola.put(["ARDUINO_CONECTADO"])
+                self.senial_conectado.emit()
                 return True
             else:
                 return False
         else:
-            self.cola.put(["ERROR","Error, no hubo respuesta del arduino, recorda que tiene que tener el programa cargado"])
+            self.senial_error.emit()
             return False
 
 
     def getConectado(self):
         return self.conectado
+    def conectar(self,puerto : str):
+        if not self.hilo.is_alive() and not self.conectado and puerto != "":
+            self.hilo = threading.Thread(target=self.run, daemon=True)
+            self.puerto = puerto
+            self.hilo.start()
 
     def enviar(self, nivel_derecho, nivel_izquierdo):
         if self.getConectado():

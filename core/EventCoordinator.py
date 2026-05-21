@@ -22,16 +22,19 @@ class EventCoordinator(QThread):
         "POT5": None,
         "POT6": None
     }
-    def __init__(self,cola : Queue,administradorVolumen : AdministradorVolumen, controladorAudio: ControladorAudio, serialArduino : SerialArduino, ui:Interfaz):
+    def __init__(self,cola : Queue,administradorVolumen : AdministradorVolumen, controladorAudio: ControladorAudio, serialArduino : SerialArduino, interfaz:Interfaz):
         super().__init__()
-
+        self.interfaz = interfaz
+        self.interfaz.ui.botonConectar.clicked.connect(self.conectarArduino)
+        self.interfaz.ui.botonIniciar.clicked.connect(self.iniciarCaptura)
         self.cola = cola
-        self.serialArudino = serialArduino
+        self.serialArduino = serialArduino
+        self.serialArduino.senial_conectado.connect(self.on_arduinoConectado)
+        self.serialArduino.senial_error.connect(self.on_arduinoError)
         self.controladorAudio = controladorAudio
 
         ## Hilos que se van a usar durante la ejecucion
         self.hiloCaptura = threading.Thread(target=self.controladorAudio.run, daemon=True)
-        self.hiloArduino = threading.Thread(target=self.serialArudino.run,daemon=True)
 
         self.administradorVolumen = administradorVolumen
         self.administradorVolumen.actualizarListaProgramas()
@@ -59,16 +62,15 @@ class EventCoordinator(QThread):
                     case "iniciar":
                         #Cuando se clickea iniciar, se le pide a la interfaz que setee el microfono.
                         self.senial.emit(["GET_MICROFONOS"])
-                    case "conectar_arduino":
-                        if senial[2] == "":
-
-                            self.cola.put(["ERROR","No hay ningun puerto arduino seleccionado"])
-                        else:
-                            self.serialArudino.conectado = False
-                            if not self.hiloArduino.is_alive():
-                                self.serialArudino.setPuerto(senial[2])
-                                self.hiloArduino = threading.Thread(target=self.serialArudino.run,daemon=True)
-                                self.hiloArduino.start()
+    def conectarArduino(self):
+        puerto = self.interfaz.getPuertoSeleccionado()
+        self.serialArduino.conectar(puerto)
+    def on_arduinoConectado(self):
+        self.interfaz.arduinoConectado()
+    def on_arduinoError(self):
+        self.interfaz.mostrarError("Error conectando con el Arduino")
+    def iniciarCaptura(self):
+        pass
     #Consumidor de items de la cola
     def run(self):
 
@@ -117,5 +119,5 @@ class EventCoordinator(QThread):
                 case "INTERFAZ":
                     self.senial.emit([entrada[1],entrada[2]])
                 case "NIVELES":
-                    self.serialArudino.enviar(entrada[1],entrada[2])
+                    self.serialArduino.enviar(entrada[1],entrada[2])
 
