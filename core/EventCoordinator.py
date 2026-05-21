@@ -22,7 +22,7 @@ class EventCoordinator(QThread):
         "POT5": None,
         "POT6": None
     }
-    def __init__(self,cola : Queue,administradorVolumen : AdministradorVolumen, controladorAudio: ControladorAudio, serialArduino : SerialArduino, interfaz:Interfaz):
+    def __init__(self,cola : Queue,administradorVolumen : AdministradorVolumen, controladorAudio: ControladorAudio, serialArduino : SerialArduinoFake, interfaz:Interfaz):
         super().__init__()
         self.interfaz = interfaz
         self.interfaz.ui.botonConectar.clicked.connect(self.conectarArduino)

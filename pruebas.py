@@ -1,15 +1,15 @@
 import queue
 import sys
+import platform
 from collections import deque
 
 from PySide6.QtWidgets import QApplication
 
-from core.AdministradorVolumen import AdministradorVolumen
-from core.ControladorAudio import ControladorAudio
+from core.AdministradorVolumenLinux import 
 from core.Interfaz import Interfaz
 from core.ListenerProgramas import ListenerProgramas
 from core.EventCoordinator import EventCoordinator
-from core.SerialArduino import SerialArduino
+from core.SerialArduinoFake import SerialArduinoFake
 
 if __name__ == "__main__":
     bus = queue.Queue()
@@ -19,14 +19,22 @@ if __name__ == "__main__":
     interfaz.inicializar()
     interfaz.mostrar()
 
-    serialArduino = SerialArduino(bus)
+    #serialArduino = SerialArduino(bus)
+    serialArduinoFake = SerialArduinoFake(bus)
 
     controladorAudio = ControladorAudio(bus)
+    listenerProgramas = None
+    if (platform.system() == "Linux"):
+        administradorVolumen = AdministradorVolumenLinux(bus)
+        listenerProgramas = ListenerProgramasLinux(bus)
+    elif (platform.system() == "Windows"):
+        administradorVolumen = AdministradorVolumenWindows(bus)
+        listenerProgramas = ListenerProgramasWindows(bus)
+    else:
+        print("Error, sistema operativo no soportado")
+        print(platform.system())
 
-    administradorVolumen = AdministradorVolumen(bus)
-
-    listener = ListenerProgramas(bus)
-    listener.listen()
+    listenerProgramas.listen()
 
     coordinador = EventCoordinator(bus, administradorVolumen, controladorAudio, serialArduino, interfaz)
     coordinador.start()
