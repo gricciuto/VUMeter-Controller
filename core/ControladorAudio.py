@@ -8,7 +8,7 @@ import time
 
 
 
-class ControladorAudio(threading.Thread):
+class ControladorAudio():
 
     microfonos = None
     disp_captura = None
@@ -18,8 +18,7 @@ class ControladorAudio(threading.Thread):
         self.microfonos = soundcard.all_microphones(include_loopback=True)
         self.cola = cola
         self.cola.put(["INTERFAZ","COMBOBOX_DISP",self.microfonos])
-        super().__init__(daemon=True)
-
+        super().__init__()
 
     def getMicrofonos(self):
         return self.microfonos
@@ -27,6 +26,9 @@ class ControladorAudio(threading.Thread):
         for item in self.microfonos:
             if item.name == microfono:
                 self.disp_captura = item
+    def iniciar(self):
+        self.hilo = threading.Thread(target=self.run, daemon=True)
+        self.hilo.start()
     def stop(self):
         self.detener = True
     def run(self):

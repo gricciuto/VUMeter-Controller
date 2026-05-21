@@ -8,7 +8,6 @@ from PySide6.QtCore import QObject, Signal
 
 from core.Evento import Evento, TipoEvento
 
-
 def get_puertos():
     return serial.tools.list_ports.comports()
 

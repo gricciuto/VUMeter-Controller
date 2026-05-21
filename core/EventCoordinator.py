@@ -8,6 +8,8 @@ from core.AdministradorVolumen import AdministradorVolumen
 from core.ControladorAudio import ControladorAudio
 from core.Interfaz import Interfaz
 from core.SerialArduino import get_puertos, SerialArduino
+from core.SerialArduinoFake import SerialArduinoFake
+
 
 #Tengo que decirle que hacer al modulo que quiero que haga algo, como lo hace no me importa, solo tengo que avisarle
 class EventCoordinator(QThread):
@@ -22,11 +24,12 @@ class EventCoordinator(QThread):
         "POT5": None,
         "POT6": None
     }
-    def __init__(self,cola : Queue,administradorVolumen : AdministradorVolumen, controladorAudio: ControladorAudio, serialArduino : SerialArduino, interfaz:Interfaz):
+    def __init__(self,cola : Queue,administradorVolumen : AdministradorVolumen, controladorAudio: ControladorAudio, serialArduino : SerialArduinoFake, interfaz:Interfaz):
         super().__init__()
         self.interfaz = interfaz
         self.interfaz.ui.botonConectar.clicked.connect(self.conectarArduino)
         self.interfaz.ui.botonIniciar.clicked.connect(self.iniciarCaptura)
+        self.interfaz.ui.botonLuz.clicked.connect(self.on_luzClick)
         self.cola = cola
         self.serialArduino = serialArduino
         self.serialArduino.senial_conectado.connect(self.on_arduinoConectado)
@@ -57,11 +60,6 @@ class EventCoordinator(QThread):
             case "comboBoxPot5":
                 self.potenciometros["POT6"] = senial[1]
                 #print(self.potenciometros)
-            case "BOTON":
-                match senial[1]:
-                    case "iniciar":
-                        #Cuando se clickea iniciar, se le pide a la interfaz que setee el microfono.
-                        self.senial.emit(["GET_MICROFONOS"])
     def conectarArduino(self):
         puerto = self.interfaz.getPuertoSeleccionado()
         self.serialArduino.conectar(puerto)
@@ -70,7 +68,11 @@ class EventCoordinator(QThread):
     def on_arduinoError(self):
         self.interfaz.mostrarError("Error conectando con el Arduino")
     def iniciarCaptura(self):
-        pass
+        self.microfono = self.interfaz.getMicronofoSeleccionado()
+        self.controladorAudio.setDispCaptura(self.microfono)
+        self.controladorAudio.iniciar()
+    def on_luzClick(self):
+        self.serialArduino.cambiarLuz()
     #Consumidor de items de la cola
     def run(self):
 

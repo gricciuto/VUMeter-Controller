@@ -10,6 +10,7 @@ from core.Interfaz import Interfaz
 from core.ListenerProgramas import ListenerProgramas
 from core.EventCoordinator import EventCoordinator
 from core.SerialArduino import SerialArduino
+from core.SerialArduinoFake import SerialArduinoFake
 
 if __name__ == "__main__":
     bus = queue.Queue()
@@ -19,7 +20,7 @@ if __name__ == "__main__":
     interfaz.inicializar()
     interfaz.mostrar()
 
-    serialArduino = SerialArduino(bus)
+    serialArduino = SerialArduinoFake(bus)
 
     controladorAudio = ControladorAudio(bus)
 

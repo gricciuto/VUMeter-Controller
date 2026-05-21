@@ -31,7 +31,7 @@ class Interfaz(QMainWindow):
         ## Diccionario que guarda a que hace referencia cada nombre en las seniales
         self._mapa_elementos = {
             "COMBOBOX_ARDUINO": self.ui.comboBoxPuertosCOM,
-            "COMBOBOX_DISP": self.ui.comboBox,
+            "COMBOBOX_DISP": self.ui.comboBoxMicrofonos,
             "COMBOBOX_POT2": self.ui.comboBoxPot1,
             "COMBOBOX_POT3": self.ui.comboBoxPot2,
             "COMBOBOX_POT4": self.ui.comboBoxPot3,
@@ -51,9 +51,7 @@ class Interfaz(QMainWindow):
     def inicializar(self):
         #Aca se inicializan las seniales de los objetos que pueden llegar a generarlas
         self.ui.botonSalir.clicked.connect(lambda: self.close())
-        self.ui.pushButton_3.clicked.connect(lambda: self.senial.emit(["BOTON","encender_luz"]))
-        self.ui.botonIniciar.clicked.connect(lambda: self.senial.emit(["BOTON","iniciar"]))
-        self.ui.comboBox.currentIndexChanged.connect(lambda: self.senial.emit(["COMBOBOX_DISP", self.ui.comboBox.currentText()]))
+        self.ui.comboBoxMicrofonos.currentIndexChanged.connect(lambda: self.senial.emit(["COMBOBOX_DISP", self.ui.comboBoxMicrofonos.currentText()]))
         self.ui.comboBoxPuertosCOM.currentIndexChanged.connect(lambda: self.senial.emit(["COMBOBOX_ARDUINO",self.ui.comboBoxPuertosCOM.currentText()]))
     def _combo_changed(self, combo):
         #Hubo un cambio en un combobox
@@ -70,21 +68,19 @@ class Interfaz(QMainWindow):
                 self.senial.emit([otro.objectName(), None])
 
         self.senial.emit([combo.objectName(),seleccionado])
+    def getMicronofoSeleccionado(self):
+        return self.ui.comboBoxMicrofonos.currentText()
     def getPuertoSeleccionado(self):
         return self.ui.comboBoxPuertosCOM.currentText()
     def arduinoConectado(self):
         self.ui.botonIniciar.setEnabled(True)
-        self.ui.pushButton_3.setEnabled(True)
+        self.ui.botonLuz.setEnabled(True)
         self.ui.textEdit.append("Arduino conectado")
     def mostrarError(self,error):
         self.ui.textEdit.append('<span style="color:red;">'+error+'</span>')
     def actualizar(self,senial):
         elemento = self._mapa_elementos.get(senial[0])
-        if senial[0] == "GET_MICROFONOS":
-            self.bus.put(["SET_MICROFONO", self.ui.comboBox.currentText()])
-        if senial[0] == "ARDUINO_CONECTADO":
-            self.ui.botonIniciar.setEnabled(True)
-            self.ui.pushButton_3.setEnabled(True)
+
         if elemento is not None:
             if isinstance(elemento, list):
 
