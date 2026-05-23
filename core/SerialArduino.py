@@ -7,6 +7,8 @@ import serial.tools.list_ports
 from PySide6.QtCore import QObject, Signal
 
 from core.Evento import Evento, TipoEvento
+from core.Paquete import PaqueteSonido
+
 
 def get_puertos():
     return serial.tools.list_ports.comports()
@@ -112,7 +114,7 @@ class SerialArduino(QObject):
         self.conexion.write(paquete)
         self.conexion.flush()
         self.cola.put(["INFO","Paquete enviado, esperando respuesta..."])
-        time.sleep(1) #Espera 1 segundo por la respuesta
+        time.sleep(0.5) #Espera 1 segundo por la respuesta
         if self.conexion.in_waiting == 3: #Esto es para que, cuando se espero el tiempo necesario, si hay 3 bytes para leer, que se lean. Esto genera que no se bloquee esperando que lleguen mas bytes.
             datos = self.conexion.read(3) #Aca no va a tener que esperar nada porque ya tiene 3 bytes para leer, lo unico que le queda es saber si son el paquete o no.
             header, comando, checksum = datos
@@ -137,9 +139,9 @@ class SerialArduino(QObject):
             self.puerto = puerto
             self.hilo.start()
 
-    def enviar(self, nivel_derecho, nivel_izquierdo):
+    def enviar(self, paquete : PaqueteSonido):
         if self.getConectado():
-            self.conexion.write(f"1.{nivel_izquierdo},{nivel_derecho}\n".encode())
+            self.conexion.write(paquete.getPaqueteArduino().encode())
         else:
             raise Exception("El modulo Controlador no esta conectado.")
 

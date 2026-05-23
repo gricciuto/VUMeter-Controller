@@ -4,16 +4,20 @@ from queue import Queue
 import wmi
 from threading import Thread
 
-class ListenerProgramas:
-    def __init__(self, cola: Queue):
-        self.cola = cola
+from PySide6.QtCore import QObject, Signal
+
+
+class ListenerProgramas(QObject):
+    senial_programa = Signal()
+    def __init__(self):
+        super().__init__()
 
     def _watch_creation(self):
         w = wmi.WMI()
         avisador = w.Win32_Process.watch_for("creation")
         while True:
             avisador()
-            self.cola.put(["EVENTO","Se creo un programa"])
+            self.senial_programa.emit()
             #print("Se notifico apertura")
     def _watch_deletion(self):
         w = wmi.WMI()
@@ -21,7 +25,7 @@ class ListenerProgramas:
         while True:
             avisador()
             #print("Se notifico cierre")
-            self.cola.put(["EVENTO","Se borro un programa"])
+            self.senial_programa.emit()
 
     def listen(self):
         Thread(target=self._watch_creation, daemon=True).start()

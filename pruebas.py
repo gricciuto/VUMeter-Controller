@@ -20,16 +20,16 @@ if __name__ == "__main__":
     interfaz.inicializar()
     interfaz.mostrar()
 
-    serialArduino = SerialArduinoFake(bus)
+    serialArduino = SerialArduino(bus)
 
     controladorAudio = ControladorAudio(bus)
 
     administradorVolumen = AdministradorVolumen(bus)
 
-    listener = ListenerProgramas(bus)
+    listener = ListenerProgramas()
     listener.listen()
 
-    coordinador = EventCoordinator(bus, administradorVolumen, controladorAudio, serialArduino, interfaz)
+    coordinador = EventCoordinator(bus, administradorVolumen, controladorAudio, serialArduino, interfaz, listener)
     coordinador.start()
     coordinador.senial.connect(interfaz.actualizar)
     interfaz.senial.connect(coordinador.actualizar)

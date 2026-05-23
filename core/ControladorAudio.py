@@ -6,10 +6,13 @@ import soundcard
 import numpy as np
 import time
 
+from PySide6.QtCore import QObject, Signal
+
+from core.Paquete import PaqueteSonido
 
 
-class ControladorAudio():
-
+class ControladorAudio(QObject):
+    senial_nivel = Signal(PaqueteSonido)
     microfonos = None
     disp_captura = None
 
@@ -50,6 +53,7 @@ class ControladorAudio():
                 nivel_izq = np.clip((db_izq + 40) / 40, 0, 1)
 
                 self.cola.put(["NIVELES", nivel_der*255, nivel_izq*255] )
+                self.senial_nivel.emit(PaqueteSonido(nivel_der, nivel_izq))
                 self.cola.put(["INTERFAZ", "NIVEL_D", nivel_der*100])
                 self.cola.put(["INTERFAZ", "NIVEL_I", nivel_izq*100])
                 ##self.interfaz.ui.progressBar.setValue(int(nivel_izq*100))

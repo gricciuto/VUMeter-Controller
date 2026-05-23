@@ -7,6 +7,8 @@ from PySide6.QtCore import Signal, QThread, QObject
 from core.AdministradorVolumen import AdministradorVolumen
 from core.ControladorAudio import ControladorAudio
 from core.Interfaz import Interfaz
+from core.ListenerProgramas import ListenerProgramas
+from core.Paquete import PaqueteSonido
 from core.SerialArduino import get_puertos, SerialArduino
 from core.SerialArduinoFake import SerialArduinoFake
 
@@ -24,17 +26,23 @@ class EventCoordinator(QThread):
         "POT5": None,
         "POT6": None
     }
-    def __init__(self,cola : Queue,administradorVolumen : AdministradorVolumen, controladorAudio: ControladorAudio, serialArduino : SerialArduinoFake, interfaz:Interfaz):
+    def __init__(self,cola : Queue,administradorVolumen : AdministradorVolumen, controladorAudio: ControladorAudio, serialArduino : SerialArduino, interfaz: Interfaz, listenerProgramas : ListenerProgramas):
         super().__init__()
         self.interfaz = interfaz
+        self.serialArduino = serialArduino
+        self.controladorAudio = controladorAudio
+        self.listenerProgramas = listenerProgramas
         self.interfaz.ui.botonConectar.clicked.connect(self.conectarArduino)
         self.interfaz.ui.botonIniciar.clicked.connect(self.iniciarCaptura)
         self.interfaz.ui.botonLuz.clicked.connect(self.on_luzClick)
+        self.listenerProgramas.senial_programa.connect(self.on_program_change)
         self.cola = cola
-        self.serialArduino = serialArduino
+
         self.serialArduino.senial_conectado.connect(self.on_arduinoConectado)
         self.serialArduino.senial_error.connect(self.on_arduinoError)
-        self.controladorAudio = controladorAudio
+        self.controladorAudio.senial_nivel.connect(self.on_nivelesChanged)
+
+
 
         ## Hilos que se van a usar durante la ejecucion
         self.hiloCaptura = threading.Thread(target=self.controladorAudio.run, daemon=True)
@@ -73,6 +81,12 @@ class EventCoordinator(QThread):
         self.controladorAudio.iniciar()
     def on_luzClick(self):
         self.serialArduino.cambiarLuz()
+    def on_program_change(self):
+        self.administradorVolumen.actualizarListaProgramas()
+    def on_nivelesChanged(self, paquete: PaqueteSonido):
+        self.serialArduino.enviar(paquete)
+        self.interfaz.setNiveles(paquete)
+
     #Consumidor de items de la cola
     def run(self):
 
@@ -110,16 +124,11 @@ class EventCoordinator(QThread):
                 case "POT2":
                     self.senial.emit(["SLIDER_POT1", entrada[1]])
                     #self.administradorVolumen.actualizarVolumen(self.potenciometros.get("POT2"), entrada[1])
-                case "EVENTO":
-                    self.administradorVolumen.actualizarListaProgramas()
-                    #print(self.lista_programas)
+
                 case "ERROR":
                     print(f"ERROR: {entrada[1]}")
                     self.senial.emit(["LOG",entrada[1]])
                 case "INFO":
                     print(f"INFO: {entrada[1]}")
-                case "INTERFAZ":
-                    self.senial.emit([entrada[1],entrada[2]])
-                case "NIVELES":
-                    self.serialArduino.enviar(entrada[1],entrada[2])
+
 

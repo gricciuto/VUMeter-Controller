@@ -3,6 +3,8 @@ from queue import Queue
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QMainWindow, QComboBox, QTextEdit, QProgressBar, QSlider
+
+from core.Paquete import PaqueteSonido
 from interfaz_ui import Ui_MainWindow
 
 
@@ -76,6 +78,10 @@ class Interfaz(QMainWindow):
         self.ui.botonIniciar.setEnabled(True)
         self.ui.botonLuz.setEnabled(True)
         self.ui.textEdit.append("Arduino conectado")
+    def setNiveles(self, paquete: PaqueteSonido):
+        nivel_izquierdo, nivel_derecho = paquete.getPaqueteInterfaz()
+        self.ui.progressBar.setValue(nivel_izquierdo)
+        self.ui.progressBar_2.setValue(nivel_derecho)
     def mostrarError(self,error):
         self.ui.textEdit.append('<span style="color:red;">'+error+'</span>')
     def actualizar(self,senial):
