@@ -24,12 +24,10 @@ class AdministradorVolumen:
         for nombre in nombres_sesiones:
             if nombre not in self.lista_programas:
                 self.lista_programas.append(nombre)
-                self.cola.put(["CREAR_PROGRAMA", nombre])
 
         for programa in list(self.lista_programas):
             if programa not in nombres_sesiones:
                 self.lista_programas.remove(programa)
-                self.cola.put(["BORRAR_PROGRAMA", programa])
 
 
     def actualizarVolumen(self,programa,nivel):

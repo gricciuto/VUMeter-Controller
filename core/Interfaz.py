@@ -70,6 +70,12 @@ class Interfaz(QMainWindow):
                 self.senial.emit([otro.objectName(), None])
 
         self.senial.emit([combo.objectName(),seleccionado])
+    def actualizarLista(self, elementos, combobox : str ):
+        combo = self._mapa_elementos.get(combobox)
+        for elemento in elementos:
+            nombre = elemento.name
+            combo.addItem(nombre)
+        combo.setCurrentIndex(0)
     def getMicronofoSeleccionado(self):
         return self.ui.comboBoxMicrofonos.currentText()
     def getPuertoSeleccionado(self):
@@ -84,6 +90,23 @@ class Interfaz(QMainWindow):
         self.ui.progressBar_2.setValue(nivel_derecho)
     def mostrarError(self,error):
         self.ui.textEdit.append('<span style="color:red;">'+error+'</span>')
+    def mostrarInfo(self,detalle):
+        self.ui.textEdit.append(detalle)
+    def actualizarPotenciometro(self, potenciometro, comando):
+        self._mapa_elementos.get(potenciometro).setValue(comando)
+    def actualizarProgramas(self, lista_programas : list):
+        for combo in self.combos:
+            actual = combo.currentText()
+            combo.blockSignals(True)
+            combo.clear()
+            combo.addItems(lista_programas)
+            if actual in lista_programas:
+                combo.setCurrentText(actual)
+            else:
+                combo.setCurrentIndex(-1)
+            combo.blockSignals(False)
+    def getProgramaPot(self, potenciometro : str):
+        return "asd"
     def actualizar(self,senial):
         elemento = self._mapa_elementos.get(senial[0])
 
@@ -102,19 +125,8 @@ class Interfaz(QMainWindow):
                     else:
                         combo.setCurrentIndex(-1)
                     combo.blockSignals(False)
-
-            if isinstance(elemento,QComboBox):
-                for puerto in senial[1]:
-                    nombre = puerto.name
-                    elemento.addItem(nombre)
-                    print(nombre)
-
-
-                elemento.setCurrentIndex(0)
             if isinstance(elemento, QTextEdit):
                 elemento.append(senial[1])
-            if isinstance(elemento, QProgressBar) or isinstance(elemento, QSlider):
-                elemento.setValue(int(senial[1]))
 
         else:
             pass

@@ -20,7 +20,6 @@ class ControladorAudio(QObject):
     def __init__(self, cola : Queue):
         self.microfonos = soundcard.all_microphones(include_loopback=True)
         self.cola = cola
-        self.cola.put(["INTERFAZ","COMBOBOX_DISP",self.microfonos])
         super().__init__()
 
     def getMicrofonos(self):
@@ -52,17 +51,7 @@ class ControladorAudio(QObject):
                 nivel_der = np.clip((db_der + 40) / 40, 0, 1)
                 nivel_izq = np.clip((db_izq + 40) / 40, 0, 1)
 
-                self.cola.put(["NIVELES", nivel_der*255, nivel_izq*255] )
                 self.senial_nivel.emit(PaqueteSonido(nivel_der, nivel_izq))
-                self.cola.put(["INTERFAZ", "NIVEL_D", nivel_der*100])
-                self.cola.put(["INTERFAZ", "NIVEL_I", nivel_izq*100])
-                ##self.interfaz.ui.progressBar.setValue(int(nivel_izq*100))
-                ##self.interfaz.ui.progressBar_2.setValue(int(nivel_der*100))
-                ##pwm_der = int(nivel_der * 255)
-                ##pwm_izq = int(nivel_izq * 255)
-
-                ##self.func_enviar(pwm_der, pwm_izq)
-
 
                 time.sleep(0.03)  # bajé el delay para que sea más fluido
 
